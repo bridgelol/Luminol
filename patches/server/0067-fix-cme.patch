@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bridge <ctibeheerder@gmail.com>
+Date: Sun, 25 Aug 2024 23:23:08 +0200
+Subject: [PATCH] fix cme
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeInstance.java b/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeInstance.java
+index 53424440c2c00a17a7dc715e92644efa82ccf918..89ebd283b43634f315e40ab4463f5900d310ffb0 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeInstance.java
++++ b/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeInstance.java
+@@ -19,7 +19,7 @@ import net.minecraft.nbt.ListTag;
+ 
+ public class AttributeInstance {
+     private final Attribute attribute;
+-    private final Map<AttributeModifier.Operation, Set<AttributeModifier>> modifiersByOperation = Maps.newEnumMap(AttributeModifier.Operation.class);
++    private final Map<AttributeModifier.Operation, Set<AttributeModifier>> modifiersByOperation = new ConcurrentHashMap<>();
+     private final Map<UUID, AttributeModifier> modifierById = new ConcurrentHashMap<>();
+     private final Set<AttributeModifier> permanentModifiers = new ObjectArraySet<>();
+     private double baseValue;
+@@ -49,7 +49,7 @@ public class AttributeInstance {
+     }
+ 
+     public Set<AttributeModifier> getModifiers(AttributeModifier.Operation operation) {
+-        return this.modifiersByOperation.computeIfAbsent(operation, operationx -> Sets.newHashSet());
++        return this.modifiersByOperation.computeIfAbsent(operation, operationx -> Sets.newConcurrentHashSet());
+     }
+ 
+     public Set<AttributeModifier> getModifiers() {

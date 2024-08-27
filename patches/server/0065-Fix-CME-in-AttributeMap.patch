@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bridge <ctibeheerder@gmail.com>
+Date: Sat, 24 Aug 2024 17:48:39 +0200
+Subject: [PATCH] Fix CME in AttributeMap
+
+
+diff --git a/src/main/java/net/minecraft/server/level/ServerEntity.java b/src/main/java/net/minecraft/server/level/ServerEntity.java
+index da03bd8fc88a4bbc756e6335ef0adc15ee6eb97e..e9dee081b64d6c8fff4bb8b2072bfa9e3e6def21 100644
+--- a/src/main/java/net/minecraft/server/level/ServerEntity.java
++++ b/src/main/java/net/minecraft/server/level/ServerEntity.java
+@@ -387,7 +387,7 @@ public class ServerEntity {
+         }
+ 
+         if (this.entity instanceof LivingEntity) {
+-            Set<AttributeInstance> set = new HashSet<>(((LivingEntity) this.entity).getAttributes().getDirtyAttributes());
++            Set<AttributeInstance> set = ((LivingEntity) this.entity).getAttributes().getDirtyAttributes();
+ 
+             if (!set.isEmpty()) {
+                 // CraftBukkit start - Send scaled max health
+diff --git a/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeMap.java b/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeMap.java
+index 0ddb031bfe8df351f1cf97d258f81558e4719dbf..035c3088e50b97cc0821a310c8ab4349e96179e9 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeMap.java
++++ b/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeMap.java
+@@ -1,11 +1,14 @@
+ package net.minecraft.world.entity.ai.attributes;
+ 
+ import com.google.common.collect.Multimap;
++import com.google.common.collect.Sets;
+ import com.mojang.logging.LogUtils;
+ import java.util.Collection;
+ import java.util.Map;
+ import java.util.Set;
+ import java.util.UUID;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.CopyOnWriteArraySet;
+ import java.util.stream.Collectors;
+ import javax.annotation.Nullable;
+ 
+@@ -22,8 +25,8 @@ import org.slf4j.Logger;
+ public class AttributeMap {
+     private static final Logger LOGGER = LogUtils.getLogger();
+     // Gale start - Lithium - replace AI attributes with optimized collections
+-    private final Map<Attribute, AttributeInstance> attributes = new Reference2ReferenceOpenHashMap<>(0);
+-    private final Set<AttributeInstance> dirtyAttributes = new ReferenceOpenHashSet<>(0);
++    private final Map<Attribute, AttributeInstance> attributes = new ConcurrentHashMap<>();
++    private final Set<AttributeInstance> dirtyAttributes = new CopyOnWriteArraySet<>();
+     // Gale end - Lithium - replace AI attributes with optimized collections
+     private final AttributeSupplier supplier;
+     private final java.util.function.Function<Attribute, AttributeInstance> createInstance; // Pufferfish

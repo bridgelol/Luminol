@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bridge <ctibeheerder@gmail.com>
+Date: Sat, 24 Aug 2024 18:01:37 +0200
+Subject: [PATCH] No more shutting down
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 37e7e88fa75dda6c2b59ed610ec3ae2136c653a5..c7be240bde260b3cee854be5bd4a9dc3f99064ca 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1855,7 +1855,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+                 CrashReport crashreport = CrashReport.forThrowable(throwable, "Exception ticking world");
+ 
+                 worldserver.fillReportDetails(crashreport);
+-                throw new ReportedException(crashreport);
++                new ReportedException(crashreport).printStackTrace();
++                //throw new ReportedException(crashreport);
+             }
+ 
+             this.profiler.pop();

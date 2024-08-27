@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bridge <ctibeheerder@gmail.com>
+Date: Fri, 23 Aug 2024 23:56:49 +0200
+Subject: [PATCH] Fix yet another concurrency issue
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeInstance.java b/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeInstance.java
+index 91d799f90685a4561d5a3d8ccc5f9bc8c0e10228..53424440c2c00a17a7dc715e92644efa82ccf918 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeInstance.java
++++ b/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeInstance.java
+@@ -10,6 +10,7 @@ import java.util.Collections;
+ import java.util.Map;
+ import java.util.Set;
+ import java.util.UUID;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.function.Consumer;
+ import javax.annotation.Nullable;
+ import net.minecraft.core.registries.BuiltInRegistries;
+@@ -19,7 +20,7 @@ import net.minecraft.nbt.ListTag;
+ public class AttributeInstance {
+     private final Attribute attribute;
+     private final Map<AttributeModifier.Operation, Set<AttributeModifier>> modifiersByOperation = Maps.newEnumMap(AttributeModifier.Operation.class);
+-    private final Map<UUID, AttributeModifier> modifierById = new Object2ObjectArrayMap<>();
++    private final Map<UUID, AttributeModifier> modifierById = new ConcurrentHashMap<>();
+     private final Set<AttributeModifier> permanentModifiers = new ObjectArraySet<>();
+     private double baseValue;
+     private boolean dirty = true;
