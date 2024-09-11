@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bridge <ctibeheerder@gmail.com>
+Date: Wed, 11 Sep 2024 18:06:17 +0200
+Subject: [PATCH] Fix flickering with teleportAsync
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 9293fb2dec97e6c6bf5abe5eb7d1878bb7f200d1..20901038089193184bfd30f8cdf2018e9de7e1a0 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -4082,21 +4082,29 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, S
+                 )
+             ) {
+                 EntityTreeNode passengerTree = this.detachPassengers();
+-                // Note: The client does not accept position updates for controlled entities. So, we must
+-                // perform a lot of tracker updates here to make it all work out.
++                List<EntityTreeNode> fullPassengerTree = passengerTree.getFullTree();
++                boolean hasPassengers = fullPassengerTree.size() > 1;
+ 
+-                // first, clear the tracker
+-                passengerTree.clearTracker();
+-                for (EntityTreeNode entity : passengerTree.getFullTree()) {
++                if (hasPassengers) {
++                    // Note: The client does not accept position updates for controlled entities. So, we must
++                    // perform a lot of tracker updates here to make it all work out.
++
++                    // first, clear the tracker
++                    passengerTree.clearTracker();
++                }
++
++                for (EntityTreeNode entity : fullPassengerTree) {
+                     entity.root.teleportSyncSameRegion(pos, yaw, pitch, speedDirectionUpdate);
+                 }
+ 
+-                passengerTree.restore();
+-                // re-add to the tracker once the tree is restored
+-                passengerTree.addTracker();
++                if (hasPassengers) {
++                    passengerTree.restore();
++                    // re-add to the tracker once the tree is restored
++                    passengerTree.addTracker();
+ 
+-                // adjust entities to final position
+-                passengerTree.adjustRiders(true);
++                    // adjust entities to final position
++                    passengerTree.adjustRiders(true);
++                }
+ 
+                 // the tracker clear/add logic is only used in the same region, as the other logic
+                 // performs add/remove from world logic which will also perform add/remove tracker logic
